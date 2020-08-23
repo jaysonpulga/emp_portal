@@ -14,12 +14,11 @@ use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
-
-use PHPExcel;
-use PHPExcel_IOFactory;
-use PHPExcel_Worksheet_MemoryDrawing;
 use PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing;
-
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Writer\IWriter;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class DailyActivityPlannerController extends Controller
 {
@@ -313,8 +312,11 @@ class DailyActivityPlannerController extends Controller
 			
 		
 
-
-			$objPHPExcel = new PHPExcel(); 
+			
+			//$objPHPExcel = new PHPExcel(); 
+			$objPHPExcel =  new Spreadsheet();
+			
+			
 			$objPHPExcel->getProperties()
 					->setCreator("user")
 					->setLastModifiedBy("user")
@@ -360,11 +362,14 @@ class DailyActivityPlannerController extends Controller
 
 						$objPHPExcel->getActiveSheet()->getRowDimension($rowCount + 2)->setRowHeight(35); 
 						
+						
 						switch ($value) {
+							
 							case 'ImageAttachment':
 							
 									$IMG = $signature = $reportdetails[$rowCount][$value];
-									$objDrawing = new PHPExcel_Worksheet_MemoryDrawing();
+								    $objDrawing = new MemoryDrawing();
+									
 									$gdImage = imagecreatefromjpeg($IMG);
 									$objDrawing->setName('Company Logo');
 									$objDrawing->setDescription('Company Logo image');
@@ -386,7 +391,8 @@ class DailyActivityPlannerController extends Controller
 								$objPHPExcel->getActiveSheet()->setCellValue($column.$cell, $reportdetails[$rowCount][$value] ); 
 								break;
 						}
-
+						
+						
 					}
 						
 					$rowCount++; 
@@ -397,13 +403,10 @@ class DailyActivityPlannerController extends Controller
 				header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 				header('Content-Disposition: attachment;filename="'.$fileName.'"');
 				header('Cache-Control: max-age=0');
-
-				$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-				$objWriter->save('php://output');				
+				$objWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($objPHPExcel, "Xlsx");
+				$objWriter->save('php://output');	
+		
 				die();
-
-		//return Excel::download(new DapExport($employeeid), 'DAP_' . $employeeid . '_' . $currDateTime . '.xlsx');
-       // return Excel::download(new DapExport($employeeid, $work_date), 'DAP' . '.xlsx');
     }
 
 }
